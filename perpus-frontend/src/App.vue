@@ -2,8 +2,8 @@
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import { ref, computed } from 'vue'
-import FooterView from './views/FooterView.vue'
-import MenuView from './views/MenuView.vue'
+import FooterView from './components/FooterView.vue'
+import MenuView from './components/MenuView.vue'
 
 const theroute = useRoute()
 const isnotlogin = computed(() => {

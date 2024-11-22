@@ -10,3 +10,17 @@ export const useCounterStore = defineStore('counter', () => {
 
   return { count, doubleCount, increment }
 })
+
+export const useUserStore = defineStore('user', () => {
+  const email = ref('')
+  const token = ref('')
+  const thecounter = ref(0)
+
+  function reset() {
+    email.value = ''
+    token.value = ''
+    thecounter.value = 0
+  }
+
+  return { email, token, thecounter, reset }
+})
