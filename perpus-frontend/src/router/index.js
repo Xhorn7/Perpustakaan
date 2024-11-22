@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '@/views/HomeView.vue'
 import MenuView from '@/components/MenuView.vue'
-import Login from '@/components/Login.vue'
+import LoginView from '@/components/Login.vue'
 import PegawaiView from '@/components/PegawaiView.vue'
 import BarangView from '@/components/BarangView.vue'
 
@@ -10,8 +10,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView
+      name: 'login',
+      component: LoginView
     },
     {
       path: '/about',
@@ -22,11 +22,6 @@ const router = createRouter({
       path: '/menu',
       name: 'menu',
       component: MenuView
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView
     },
     {
       path: '/pegawai',

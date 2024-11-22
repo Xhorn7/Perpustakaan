@@ -23,7 +23,7 @@ const bodyParameters = computed(() => {
 
 function login() {
   axios({
-    url: 'http://localhost/perpus/public/api/login',
+    url: 'http://localhost:8000/api/login',
     method: 'post',
     data: bodyParameters.value,
     headers: customConfig
