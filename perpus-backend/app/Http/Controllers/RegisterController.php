@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\MyUtil;
 use App\Http\Controllers\Controller;
@@ -23,7 +22,8 @@ class RegisterController extends Controller
 
         if ($validator->fails()) {
             return MyUtil::sendError('Validation Error.', $validator->errors());
-        } else {
+        } else
+        {
             if (User::where('email', '=', $request->email)->first() === null) {
                 $input = $request->all();
                 $input['password'] = bcrypt($input['password']);
@@ -31,7 +31,9 @@ class RegisterController extends Controller
                 $success['token'] = $user->createToken('MyApp')->plainTextToken;
                 $success['name'] = $user->name;
                 return MyUtil::sendResponse($success, 'User register successfully.');
-            } else {
+            }
+            else
+            {
                 return MyUtil::sendError('User already exists.', "user duplicate");
             }
         }
@@ -39,21 +41,15 @@ class RegisterController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
-        }
-
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password]))
+        {
             $user = Auth::user();
-            $token = $user->createToken('MyApp')->plainTextToken;
-            return response()->json(['token' => $token], 200);
-        } else {
-            return response()->json(['error' => 'Unauthorized'], 401);
+
+            DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+            return MyUtil::sendResponse($user->createToken('MyApp')->plainTextToken, 'User login successfully.');
+        } else
+        {
+            return MyUtil::sendError('Unauthorised.', 'Unauthorised');
         }
     }
 

@@ -61,20 +61,6 @@ function login() {
       </div>
       <FooterView v-if="isnotlogin" />
   </div>
-  <div class="login-container">
-    <h2>Login</h2>
-    <form @submit.prevent="login">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" v-model="username" required />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <button type="submit">Login</button>
-    </form>
-  </div>
 </template>
 
 <style scoped>
@@ -138,15 +124,6 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
-}
-
-.login-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f9f9f9;
 }
 
 .form-group {
