@@ -105,7 +105,7 @@ class BukuController extends Controller
         }
 
         try {
-            $buku = Buku::findOrFail($id);
+            $buku = Buku::where('isbn', $id)->firstOrFail();
             $buku->isbn = $request->isbn;
             $buku->judul = $request->judul;
             $buku->pengarang = $request->pengarang;
