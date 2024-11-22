@@ -1,6 +1,14 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+import { ref, computed } from 'vue'
+import FooterView from './views/FooterView.vue'
+import MenuView from './views/MenuView.vue'
+
+const theroute = useRoute()
+const isnotlogin = computed(() => {
+  return theroute.name != 'login' ? true : false
+})
 </script>
 
 <template>
@@ -17,7 +25,13 @@ import HelloWorld from './components/HelloWorld.vue'
     </div>
   </header>
 
-  <RouterView />
+  <div class="container">
+    <MenuView v-if="isnotlogin" />
+    <div class="row" style="margin-top: 65px;">
+      <RouterView />
+    </div>
+    <FooterView v-if="isnotlogin" />
+  </div>
 </template>
 
 <style scoped>
