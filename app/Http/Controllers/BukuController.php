@@ -91,33 +91,29 @@ class BukuController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update (Request $request, $id)
+    public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(),
-        [
+        $validator = Validator::make($request->all(), [
             'isbn' => 'required',
             'judul' => 'required',
             'pengarang' => 'required',
             'tahun' => 'required',
         ]);
 
-        if ($validator->fails())
-        {
+        if ($validator->fails()) {
             return MyUtil::sendError('Validation Error.', $validator->errors());
         }
 
-        try
-        {
+        try {
             $buku = Buku::findOrFail($id);
             $buku->isbn = $request->isbn;
             $buku->judul = $request->judul;
             $buku->pengarang = $request->pengarang;
             $buku->tahun = $request->tahun;
             $buku->save();
+
             return MyUtil::sendResponse($buku, 'Book updated successfully.');
-        }
-        catch (ModelNotFoundException $ex)
-        {
+        } catch (ModelNotFoundException $ex) {
             return MyUtil::sendError("NOT FOUND", 'NOT FOUND');
         }
     }
