@@ -2,10 +2,9 @@
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/counter'
+import { useUserStore } from '../stores/counter' // Ensure this import is correct
 
 axios.defaults.withCredentials = true;
-axios.defaults.withXSRFToken = true;
 
 const therouter = useRouter()
 const auth = ref(null)
@@ -26,7 +25,8 @@ function login() {
     url: 'http://localhost:8000/api/login',
     method: 'post',
     data: bodyParameters.value,
-    headers: customConfig
+    headers: customConfig,
+    withCredentials: true
   }).then(response => {
     auth.value = response.data
     console.log(response.data) // only for development
@@ -34,6 +34,7 @@ function login() {
       store.email = username.value
       store.token = auth.value.data
       store.thecounter++
+      console.log('Redirecting to /menu') // Debugging line
       therouter.push('/menu')
     }
   })
