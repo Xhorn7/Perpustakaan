@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
-import MenuView from '@/views/MenuView.vue'
-import LoginView from '@/views/Login.vue'
-import PegawaiView from '@/views/PegawaiView.vue'
-import BarangView from '@/views/BarangView.vue'
+import MenuView from '@/components/MenuView.vue'
+import LoginView from '@/components/Login.vue'
+import PegawaiView from '@/components/PegawaiView.vue'
+import BarangView from '@/components/BarangView.vue'
 import BukuView from '@/views/BukuView.vue'
 import FormBukuView from '@/views/FormBukuView.vue'
 

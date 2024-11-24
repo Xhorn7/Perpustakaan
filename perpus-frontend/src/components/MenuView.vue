@@ -34,14 +34,11 @@ function logout() {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">MyApp</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <div class="d-flex">
+    <nav class="sidebar bg-light">
+      <div class="sidebar-sticky">
+        <a class="navbar-brand" href="#">MyApp</a>
+        <ul class="nav flex-column">
           <li class="nav-item">
             <router-link class="nav-link" to="/">Home</router-link>
           </li>
@@ -55,17 +52,43 @@ function logout() {
             <router-link class="nav-link" to="/barang">Barang</router-link>
           </li>
         </ul>
-        <span class="navbar-text me-3">
+        <span class="navbar-text mt-3">
           Counter: {{ thecounter }}
         </span>
-        <button class="btn btn-outline-danger" @click="logout">Logout</button>
+        <button class="btn btn-outline-danger mt-3" @click="logout">Logout</button>
       </div>
+    </nav>
+    <div class="content p-4">
+      <router-view></router-view>
     </div>
-  </nav>
+  </div>
 </template>
 
 <style scoped>
-.navbar {
-  margin-bottom: 20px;
+.d-flex {
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+}
+
+.nav-link {
+  margin-bottom: 10px;
+}
+
+.navbar-text {
+  display: block;
 }
 </style>
