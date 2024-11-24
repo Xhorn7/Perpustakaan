@@ -11,6 +11,8 @@ const auth = ref(null)
 const username = ref('')
 const password = ref('')
 const store = useUserStore()
+const loading = ref(false)
+const errorMessage = ref('')
 
 const customConfig = {
   'Content-Type': 'application/json',
@@ -21,6 +23,8 @@ const bodyParameters = computed(() => {
 });
 
 function login() {
+  loading.value = true
+  errorMessage.value = ''
   axios({
     url: 'http://localhost:8000/api/login',
     method: 'post',
@@ -36,12 +40,17 @@ function login() {
       store.thecounter++
       console.log('Redirecting to /menu') // Debugging line
       therouter.push('/menu')
+    } else {
+      errorMessage.value = 'Login failed. Please check your credentials.'
     }
   })
   .catch(error => {
     console.log('AJAX' + error)
+    errorMessage.value = 'An error occurred. Please try again later.'
   })
-  .finally()
+  .finally(() => {
+    loading.value = false
+  })
 }
 </script>
 
@@ -57,7 +66,11 @@ function login() {
         <label for="password">Password</label>
         <input type="password" id="password" v-model="password" required />
       </div>
-      <button type="submit">Login</button>
+      <button type="submit" :disabled="loading">
+        <span v-if="loading">Loading...</span>
+        <span v-else>Login</span>
+      </button>
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </form>
   </div>
 </template>
@@ -66,10 +79,16 @@ function login() {
 .login-container {
   max-width: 400px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
@@ -79,13 +98,15 @@ function login() {
 label {
   display: block;
   margin-bottom: 0.5rem;
+  font-weight: bold;
 }
 
 input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 button {
@@ -97,9 +118,21 @@ button {
   color: white;
   font-size: 1rem;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-button:hover {
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.error-message {
+  color: red;
+  margin-top: 1rem;
+  text-align: center;
 }
 </style>
