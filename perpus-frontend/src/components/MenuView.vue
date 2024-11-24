@@ -3,9 +3,8 @@ import { ref, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/counter'
-import { storeToRefs, createPinia } from 'pinia'
+import { storeToRefs } from 'pinia'
 
-const pini = createPinia()
 const store = useUserStore()
 const { thecounter } = storeToRefs(store)
 const therouter = useRouter()
@@ -28,41 +27,42 @@ function logout() {
   .catch(error => {
     console.log('AJAX' + error)
   })
-  .finally()
 }
 </script>
 
 <template>
-  <nav>
-    <ul>
-      <li><router-link to="/">Home</router-link></li>
-      <li><router-link to="/about">About</router-link></li>
-      <li><button @click="logout">Logout</button></li>
-    </ul>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">MyApp</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <router-link class="nav-link" to="/">Home</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/about">About</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/pegawai">Pegawai</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/barang">Barang</router-link>
+          </li>
+        </ul>
+        <span class="navbar-text me-3">
+          Counter: {{ thecounter }}
+        </span>
+        <button class="btn btn-outline-danger" @click="logout">Logout</button>
+      </div>
+    </div>
   </nav>
 </template>
 
 <style scoped>
-nav {
-  background-color: #f8f9fa;
-  padding: 1rem;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline;
-  margin-right: 1rem;
-}
-
-button {
-  background: none;
-  border: none;
-  color: #007bff;
-  cursor: pointer;
-  text-decoration: underline;
+.navbar {
+  margin-bottom: 20px;
 }
 </style>
