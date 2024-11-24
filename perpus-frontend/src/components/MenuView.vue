@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/counter'
 import { storeToRefs } from 'pinia'
+import alertify from 'alertifyjs'
 
 const store = useUserStore()
 const { thecounter } = storeToRefs(store)
@@ -22,10 +23,12 @@ function logout() {
     if (response.data.success === true) {
       store.reset()
       therouter.push('/')
+      alertify.success('Logged out successfully')
     }
   })
   .catch(error => {
     console.log('AJAX' + error)
+    alertify.error('Logout failed')
   })
 }
 </script>
