@@ -1,120 +1,159 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/counter'
-import alertify from 'alertifyjs'
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
+import { useUserStore } from "../stores/counter";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Eye, Trash2, FolderPlus } from "lucide-vue-next";
 
-const books = ref([])
-const store = useUserStore()
-const therouter = useRouter()
+const books = ref([]); // Ensure it's an array of objects
+const store = useUserStore();
+const therouter = useRouter();
 const customConfig = {
-  'Authorization': 'Bearer ' + store.token
-}
+  Authorization: "Bearer " + store.token,
+};
+const showDeleteDialog = ref(false);
+const bookToDelete = ref(null);
+
+onMounted(() => {
+  refreshdata();
+});
 
 function refreshdata() {
   axios({
-    url: 'http://localhost/perpus/public/api/book/buku',
-    method: 'get',
-    headers: customConfig
-  }).then(response => {
-    console.log(response.data) // only for development
-    if (response.data.success === true) {
-      books.value = response.data.data
-    }
+    url: "http://localhost:8000/api/book/buku",
+    method: "get",
+    headers: customConfig,
   })
-  .catch(error => {
-    console.log('AJAX' + error)
-  })
-}
-
-onMounted(() => {
-  refreshdata()
-})
-
-function delete_dialog(id) {
-  alertify.confirm('Confirmation', 'Are you sure to delete this data?', 
-    function() { 
-      hapus(id)
-    }, function() { 
-      alertify.error('Cancel')
+    .then((response) => {
+      books.value = response.data.data || []; // Handle API structure
+      console.log(books.value);
     })
+    .catch((error) => {
+      console.log("AJAX" + error);
+    });
 }
 
-function hapus(id) {
+function delete_dialog(isbn) {
+  bookToDelete.value = isbn;
+  showDeleteDialog.value = true;
+}
+
+function hapus() {
+  if (!bookToDelete.value) return;
+  console.log(bookToDelete.value);
+
   axios({
-    url: 'http://localhost/perpus/public/api/book/delete/' + id,
-    method: 'get',
-    headers: customConfig
-  }).then(response => {
-    if (response.data.success === true) {
-      alertify.alert('Information', 'Data has been deleted!', function() { 
-        alertify.success('OK');  
-      });
-      refreshdata()
-    }
+    url: `http://localhost:8000/api/book/delete/${bookToDelete.value}`,
+    method: "get", // Change to appropriate method if needed
+    headers: customConfig,
   })
-  .catch(error => {
-    console.log('AJAX' + error)
-  })
+    .then((response) => {
+      if (response.data.success) {
+        refreshdata();
+      }
+    })
+    .catch((error) => {
+      console.log("AJAX" + error);
+    })
+    .finally(() => {
+      showDeleteDialog.value = false;
+      bookToDelete.value = null;
+    });
 }
 </script>
 
 <template>
-  <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Book List</h2>
-      <router-link to="/formbuku">
-        <button type="button" class="btn btn-primary">
-          <font-awesome-icon :icon="['fas', 'folder-plus']" /> 
-          Add Book
-        </button>
-      </router-link>
-    </div>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>ISBN</th>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Year</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in books" :key="item.isbn">
-          <td class="text-end">{{ index + 1 }}</td>
-          <td>{{ item.isbn }}</td>
-          <td>{{ item.judul }}</td>
-          <td>{{ item.pengarang }}</td>
-          <td class="text-center">{{ item.tahun }}</td>
-          <td>
-            <router-link :to="{ name: 'bukuview', params: { 'theisbn': item.isbn } }">
-              <button type="button" class="btn btn-outline-success btn-sm">
-                <font-awesome-icon :icon="['fas', 'eye']" /> View
-              </button>
+  <div class="lg:ml-72">
+    <router-link :to="{ name: 'bukuview' }">
+      <Button>
+        <FolderPlus class="w-4 h-4 mr-2" />
+        Add Book
+      </Button>
+    </router-link>
+
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead class="w-[100px]">No.</TableHead>
+          <TableHead>ISBN</TableHead>
+          <TableHead>Title</TableHead>
+          <TableHead>Author</TableHead>
+          <TableHead>Year</TableHead>
+          <TableHead class="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow v-for="(item, index) in books" :key="item.isbn">
+          <TableCell class="font-medium">{{ index + 1 }}</TableCell>
+          <TableCell>{{ item.isbn }}</TableCell>
+          <TableCell>{{ item.judul }}</TableCell>
+          <TableCell>{{ item.pengarang }}</TableCell>
+          <TableCell>{{ item.tahun }}</TableCell>
+          <TableCell class="text-right">
+            <router-link
+              :to="{
+                name: 'bukuview',
+                params: { theisbn: item.isbn },
+              }"
+            >
+              <Button variant="outline" size="sm" class="mr-2">
+                <Eye class="w-4 h-4 mr-2" />
+                View
+              </Button>
             </router-link>
-            <button type="button" @click="delete_dialog(item.isbn)" class="btn btn-outline-danger btn-sm">
-              <font-awesome-icon :icon="['fas', 'trash']" /> Delete
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="delete_dialog(item.isbn)"
+            >
+              <Trash2 class="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+
+    <AlertDialog
+      :open="showDeleteDialog"
+      @update:open="showDeleteDialog = $event"
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the book
+            and remove its data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel @click="showDeleteDialog = false"
+            >Cancel</AlertDialogCancel
+          >
+          <AlertDialogAction @click="hapus">Continue</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
-
-<style scoped>
-.container {
-  margin-top: 20px;
-}
-
-.table {
-  margin-top: 20px;
-}
-
-.btn {
-  margin-right: 5px;
-}
-</style>

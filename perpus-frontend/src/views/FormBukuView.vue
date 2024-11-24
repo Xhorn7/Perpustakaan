@@ -1,72 +1,233 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
-import { useUserStore } from '../stores/counter'
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import axios from "axios";
+import { useUserStore } from "../stores/counter";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-const isbn_readonly = ref(false)
-const theroute = useRoute()
-const therouter = useRouter()
-const store = useUserStore()
-const isbn = ref('')
-const judul = ref('')
-const pengarang = ref('')
-const tahun = ref(2020)
+const isbn_readonly = ref(false);
+const theroute = useRoute();
+const therouter = useRouter();
+const store = useUserStore();
+const showAlertDialog = ref(false);
+const alertMessage = ref("");
 
 const customConfig = {
-  'Content-Type': 'application/json',
-  'Authorization': 'Bearer ' + store.token
-}
+    "Content-Type": "application/json",
+    Authorization: "Bearer " + store.token,
+};
 
-const thedata = computed(() => {
-  return { 'isbn': isbn.value, 'judul': judul.value, 'pengarang': pengarang.value, 'tahun': tahun.value }
-})
+const formSchema = toTypedSchema(
+    z.object({
+        isbn: z
+            .union([z.string(), z.number()])
+            .transform((val) =>
+                typeof val === "string" ? parseInt(val, 10) : val
+            )
+            .refine((val) => !isNaN(val), {
+                message: "ISBN must be a valid number",
+            })
+            .refine((val) => val > 0, {
+                message: "ISBN is required and must be greater than 0",
+            }),
+        judul: z.string().min(1, "Title is required"),
+        pengarang: z.string().min(1, "Author is required"),
+        tahun: z
+            .union([z.string(), z.number()])
+            .transform((val) =>
+                typeof val === "string" ? parseInt(val, 10) : val
+            )
+            .refine((val) => !isNaN(val), {
+                message: "Year must be a valid number",
+            })
+            .refine((val) => val >= 1000, {
+                message: "Year must be at least 1000",
+            })
+            .refine((val) => val <= new Date().getFullYear(), {
+                message: `Year must not exceed ${new Date().getFullYear()}`,
+            }),
+    })
+);
 
-function save() {
-  const store_or_update = theroute.params.theisbn !== undefined ? 'update' : 'store'
-  axios({
-    url: 'http://localhost/perpus/public/api/book/' + store_or_update,
-    method: 'post',
-    data: thedata.value,
-    headers: customConfig
-  }).then(response => {
-    console.log(response.data) // only for development
-    if (response.data.success === true) {
-      alertify.alert('Information', 'Data has been saved!', function () { alertify.success('OK'); });
-      therouter.push('/buku')
+const form = useForm({
+    validationSchema: formSchema,
+    initialValues: {
+        isbn: "",
+        judul: "",
+        pengarang: "",
+        tahun: 2020,
+    },
+});
+
+const save = async (values) => {
+    const store_or_update =
+        theroute.params.theisbn !== undefined ? "update" : "store";
+
+    console.log(values); // only for development
+    console.log(theroute.params.theisbn); // only for development
+    console.log(store_or_update); // only for development
+    try {
+        const url =
+            store_or_update === "update"
+                ? `http://localhost:8000/api/book/update/${theroute.params.theisbn}`
+                : `http://localhost:8000/api/book/store`;
+
+        const response = await axios({
+            url: url,
+            method: "post",
+            data: values,
+            headers: customConfig,
+        });
+
+        if (response.data.success === true) {
+            alertMessage.value =
+                store_or_update === "update"
+                    ? "Data has been updated!"
+                    : "Data has been saved!";
+            showAlertDialog.value = true;
+        }
+    } catch (error) {
+        console.log("AJAX" + error);
+        alertMessage.value = "An error occurred while saving the data.";
+        showAlertDialog.value = true;
     }
-  })
-    .catch(error => {
-      console.log('AJAX' + error)
-    })
-    .finally()
-}
+};
 
-onMounted(() => {
-  if (theroute.params.theisbn !== undefined) {
-    isbn_readonly.value = true
-    axios({
-      url: 'http://localhost/perpus/public/api/book/show/' + theroute.params.theisbn,
-      method: 'get',
-      headers: customConfig
-    }).then(response => {
-      console.log(response.data) // only for development
-      if (response.data.success === true) {
-        isbn.value = response.data.data.isbn
-        judul.value = response.data.data.judul
-        pengarang.value = response.data.data.pengarang
-        tahun.value = response.data.data.tahun
-      }
-    })
-      .catch(error => {
-        console.log('AJAX' + error)
-      })
-      .finally()
-  }
-})
+onMounted(async () => {
+    if (theroute.params.theisbn !== undefined) {
+        isbn_readonly.value = true;
+        try {
+            const response = await axios({
+                url: `http://localhost:8000/api/book/show/${theroute.params.theisbn}`,
+                method: "get",
+                headers: customConfig,
+            });
+            if (response.data.success === true) {
+                form.setValues({
+                    isbn: response.data.data.isbn,
+                    judul: response.data.data.judul,
+                    pengarang: response.data.data.pengarang,
+                    tahun: response.data.data.tahun,
+                });
+            }
+            console.log(form); // only for development
+        } catch (error) {
+            console.log("AJAX" + error);
+        }
+    }
+});
 </script>
 
 <template>
-  <input type="text" class="form-control" id="isbn" required v-model="isbn" :readonly="isbn_readonly">
-  <input type="number" class="form-control" id="tahun" min="1980" max="2040" v-model="tahun">
+    <Form @submit="save" :validation-schema="formSchema" class="lg:ml-72" v-slot="{ errors }">
+        <FormField name="isbn" v-model="form.values.isbn" v-slot="{ field }">
+            <FormItem class="mb-8">
+                <FormLabel>ISBN</FormLabel>
+                <FormControl>
+                    <Input
+                        v-if="theroute.params.theisbn === undefined || -1"
+                        v-bind="field"
+                        v-model="form.values.isbn"
+                    />
+                    <Input
+                        v-else
+                        v-bind="field"
+                        v-model="form.values.isbn"
+                        :readonly="isbn_readonly"
+                    />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+        </FormField>
+        <FormField name="judul" v-model="form.values.judul" v-slot="{ field }">
+            <FormItem class="mb-8">
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                    <Input v-bind="field" v-model="form.values.judul" />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+        </FormField>
+        <FormField
+            name="pengarang"
+            v-model="form.values.pengarang"
+            v-slot="{ field }"
+        >
+            <FormItem class="mb-8">
+                <FormLabel>Author</FormLabel>
+                <FormControl>
+                    <Input v-bind="field" v-model="form.values.pengarang" />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+        </FormField>
+        <FormField name="tahun" v-model="form.values.tahun" v-slot="{ field }">
+            <FormItem class="mb-8">
+                <FormLabel>Year</FormLabel>
+                <FormControl>
+                    <Input
+                        v-bind="field"
+                        type="number"
+                        v-model="form.values.tahun"
+                    />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+        </FormField>
+        <div class="flex justify-between">
+            <Button type="submit">Save</Button>
+            <Button
+                type="button"
+                class="text-white bg-red-700"
+                @click="therouter.push('/buku')"
+                >Cancel</Button
+            >
+        </div>
+    </Form>
+
+    <AlertDialog
+        :open="showAlertDialog"
+        @update:open="showAlertDialog = $event"
+    >
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Information</AlertDialogTitle>
+                <AlertDialogDescription>
+                    {{ alertMessage }}
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogAction
+                    @click="
+                        showAlertDialog = false;
+                        therouter.push('/buku');
+                    "
+                    >OK</AlertDialogAction
+                >
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 </template>

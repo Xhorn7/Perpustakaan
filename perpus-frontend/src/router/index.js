@@ -41,7 +41,7 @@ const router = createRouter({
       component: BukuView
     },
     {
-      path: '/bukuview/:theisbn',
+      path: '/bukuview/:theisbn?',
       name: 'bukuview',
       component: FormBukuView
     }
