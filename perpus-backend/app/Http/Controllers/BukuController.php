@@ -36,12 +36,12 @@ class BukuController extends Controller
         $cari = $request->cari;
         $start = $request->start;
         $limit = $request->limit;
-        $count = DB::table('buku')
+        $count = DB::table('bukus')
             ->where('judul', 'like', "%".$cari."%")
             ->orWhere('pengarang', 'like', "%".$cari."%")
             ->count();
 
-        $buku = DB::table('buku')
+        $buku = DB::table('bukus')
             ->where('judul', 'like', "%".$cari."%")
             ->orWhere('pengarang', 'like', "%".$cari."%")
             ->offset($start)
@@ -63,30 +63,25 @@ class BukuController extends Controller
     {
         $validator = Validator::make($request->all(),
         [
-            'isbn' => 'required',
-            'judul' => 'required',
-            'tahun' => 'required',
+            'isbn' => 'required|string|max:255',
+            'judul' => 'required|string|max:255',
+            'pengarang' => 'required|string|max:255',
+            'tahun' => 'required|integer',
         ]);
 
         if ($validator->fails())
         {
-            return MyUtil::sendError('Validation Error.', $validator->errors());
+            return response()->json(['errors' => $validator->errors()], 400);
         }
-        else
-        {
-            if (Buku::where('isbn', '=', $request->isbn)->exists()) {
-                return MyUtil::sendError('duplicate isbn', 'duplicate on book');
-            } else
-            {
-                $bukus = new Buku();
-                $bukus->isbn = $request->isbn;
-                $bukus->judul = $request->judul;
-                $bukus->pengarang = $request->pengarang;
-                $bukus->tahun = $request->tahun;
-                $bukus->save();
-                return $this->index();
-            }
-        }
+
+        $buku = new Buku();
+        $buku->isbn = $request->isbn;
+        $buku->judul = $request->judul;
+        $buku->pengarang = $request->pengarang;
+        $buku->tahun = $request->tahun;
+        $buku->save();
+
+        return response()->json(['success' => true, 'data' => $buku], 201);
     }
 
     /**
@@ -94,64 +89,58 @@ class BukuController extends Controller
      */
     public function show($id)
     {
-        try
-        {
-            $buku = Buku::where('isbn', $id)->firstOrFail();
-            return MyUtil::sendResponse($buku, 'OK');
+        try {
+            $buku = Buku::findOrFail($id);
+            return response()->json(['success' => true, 'data' => $buku], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Book not found'], 404);
         }
-        catch (ModelNotFoundException $ex)
-        {
-            return MyUtil::sendError("NOT FOUND", 'NOT FOUND');
-        }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Buku $buku)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update (Request $request, $id)
+    public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(),
         [
-            'isbn' => 'required',
-            'judul' => 'required',
-            'pengarang' => 'required',
-            'tahun' => 'required',
+            'isbn' => 'required|string|max:255',
+            'judul' => 'required|string|max:255',
+            'pengarang' => 'required|string|max:255',
+            'tahun' => 'required|integer',
         ]);
 
         if ($validator->fails())
         {
-            return MyUtil::sendError('Validation Error.', $validator->errors());
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
-        try
-        {
+        try {
             $buku = Buku::findOrFail($id);
             $buku->isbn = $request->isbn;
             $buku->judul = $request->judul;
             $buku->pengarang = $request->pengarang;
             $buku->tahun = $request->tahun;
             $buku->save();
-            return MyUtil::sendResponse($buku, 'Book updated successfully.');
-        }
-        catch (ModelNotFoundException $ex)
-        {
-            return MyUtil::sendError("NOT FOUND", 'NOT FOUND');
+
+            return response()->json(['success' => true, 'data' => $buku], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Book not found'], 404);
         }
     }
+
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($isbn)
+    public function destroy($id)
     {
-        Buku::where('isbn', $isbn)->delete();
-        return $this->index();
+        try {
+            $buku = Buku::findOrFail($id);
+            $buku->delete();
+
+            return response()->json(['success' => true, 'message' => 'Book deleted'], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Book not found'], 404);
+        }
     }
 }

@@ -19,4 +19,8 @@ class Buku extends Model
 
     // Jika kolom kunci utama bukan 'id', tambahkan properti berikut
     protected $primaryKey = 'isbn'; // Gantilah 'isbn' dengan nama kolom kunci utama yang benar
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 }
