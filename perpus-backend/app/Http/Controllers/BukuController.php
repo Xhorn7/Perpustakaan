@@ -8,7 +8,7 @@ use App\Http\Requests\StoreBukuRequest;
 use App\Http\Requests\UpdateBukuRequest;
 use App\Http\Controllers\MyUtil;
 use Validator;
-use Illuminate\Support\Fadecades\DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -52,7 +52,8 @@ class BukuController extends Controller
         $obj = new \stdClass();
         $obj->count = $count;
         $obj->buku = $buku;
-        return MyUtil::sendResponse($obj, 'OK');
+
+        return response()->json($obj);
     }
 
     /**
