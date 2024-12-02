@@ -25,7 +25,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Eye, Trash2, FolderPlus } from "lucide-vue-next";
+// import { Dialog } from 'vue-awesome-paginate';
+import alertify from 'alertifyjs'
+import VueAwesomePaginate from 'vue-awesome-paginate'
 
+const currentPage = ref(1);
+const ncount = ref(0);
+const per_page = 8
 const books = ref([]); // Ensure it's an array of objects
 const store = useUserStore();
 const therouter = useRouter();
@@ -34,25 +40,47 @@ const customConfig = {
 };
 const showDeleteDialog = ref(false);
 const bookToDelete = ref(null);
+const cari = ref('')
+const list_data = refreshdata()
+const nomor = computed(()=>{
+  return currentPage.value == 1 ? 1 : (currentPage.value - 1) * per_page + 1
+})
 
-onMounted(() => {
-  refreshdata();
-});
+function docari(){
+  currentPage.value = 1
+  refreshdata()
+}
+
+const onClickHandler = (page) => {
+  refreshdata()
+}
 
 function refreshdata() {
+  let start_data = currentPage.value == 1 ? 0 : (currentPage.value - 1) * per_page
+  let thedata = {'start': start_data, 'limit': per_page, 'cari': cari.value}
+  console.log(thedata)
   axios({
     url: "http://localhost:8000/api/book/buku",
-    method: "get",
+    method: "get", // kalo ga get/post  
     headers: customConfig,
   })
     .then((response) => {
-      books.value = response.data.data || []; // Handle API structure
-      console.log(books.value);
+      console.log(response.data); //only for development
+      if(response.data.success === true)
+      {
+        books.value = response.data.data.buku
+        ncount.value = response.data.data.count
+      }
     })
     .catch((error) => {
       console.log("AJAX" + error);
-    });
+    })
+    .finally()
 }
+
+onMounted(() => {
+  list_data
+})
 
 function delete_dialog(isbn) {
   bookToDelete.value = isbn;
