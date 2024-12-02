@@ -15,8 +15,10 @@ Route::middleware('auth:sanctum')->group(function() {
 
     Route::controller(BukuController::class)->group(function() {
         Route::get('/book/buku', 'index');
+        Route::post('/book/store', 'store');
         Route::get('/book/show/{id}', 'show');
         Route::post('/book/update/{id}', 'update');
         Route::get('/book/delete/{id}', 'destroy');
+        Route::post('/book/cari', 'search');
     });
 });
