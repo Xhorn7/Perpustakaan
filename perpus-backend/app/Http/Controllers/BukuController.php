@@ -31,6 +31,30 @@ class BukuController extends Controller
         //
     }
 
+    public function search(Request $request)
+    {
+        $cari = $request->cari;
+        $start = $request->start;
+        $limit = $request->limit;
+        $count = DB::table('buku')
+            ->where('judul', 'like', "%".$cari."%")
+            ->orWhere('pengarang', 'like', "%".$cari."%")
+            ->count();
+
+        $buku = DB::table('buku')
+            ->where('judul', 'like', "%".$cari."%")
+            ->orWhere('pengarang', 'like', "%".$cari."%")
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('judul')
+            ->get();
+
+        $obj = new \stdClass();
+        $obj->count = $count;
+        $obj->buku = $buku;
+        return MyUtil::sendResponse($obj, 'OK');
+    }
+
     /**
      * Store a newly created resource in storage.
      */
