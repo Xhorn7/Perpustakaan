@@ -53,7 +53,7 @@ class BukuController extends Controller
         $obj->count = $count;
         $obj->buku = $buku;
 
-        return response()->json($obj);
+        return MyUtil::sendResponse($obj, 'OK');
     }
 
     /**

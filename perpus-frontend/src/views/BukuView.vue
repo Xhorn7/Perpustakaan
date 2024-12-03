@@ -35,9 +35,9 @@ import { Eye, FolderPlus, Trash2 } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "../stores/counter";
 
-const currentPage = ref(2);
-const ncount = ref(380);
-const per_page = 20;
+const currentPage = ref(1);
+const ncount = ref();
+const per_page = 10;
 const books = ref([]);
 const store = useUserStore();
 const customConfig = {
