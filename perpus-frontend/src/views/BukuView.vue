@@ -37,7 +37,7 @@ import { useUserStore } from "../stores/counter";
 
 const currentPage = ref(1);
 const ncount = ref();
-const per_page = 10;
+const per_page = 5;
 const books = ref([]);
 const store = useUserStore();
 const customConfig = {
